@@ -1,0 +1,125 @@
+# Data analyses and figure creation for the Google Docs Influences of Goal Orientation Survey
+
+### Alejandra G. Chong
+
+## Introduction
+
+This file was used to analyze data from [Google Docs Influences on Goal Orientation Survey][https://docs.google.com/forms/d/13up91gdLWo-2HG7FHqiRYCz_CzbS0Rxida7eLTKutD0/viewform]. All materials including consent, experimental tasks, and debriefing can be accessed with the link and following the instructions in the survey. These data represent results from 143 participants who completed the survey.
+
+## Preparing data for analysis
+
+First we read in the data.
+
+```{r}
+dat<-read.csv("GoalOrientationanswersfinal.csv")
+```
+
+Then we check the structure of the data and change any variables needed into factor variables.
+
+```{r}
+str(dat)
+```
+
+
+```{r}
+dat$Gender<-as.factor(dat$Gender)
+dat$Condition<-as.factor(dat$Condition)
+```
+
+## Primary Analysis
+
+Now, we perform a between-subjects 2-way ANOVA looking for effects between survey scores and whether or not participants were affected by the condition description they were pre-esposed to, as well as the difference between genders and their scores. Then we create a line and grouped bar graph for the data analyzed. But first we summarize the data.
+
+```{r}
+summary(aov(Result~Condition*Gender, data=dat))
+```
+There was a small effect on the goal orientation depending on which goal perspective condition the participants were pre-exposed to. Individuals who were pre-exposed to the performance condition had higher survey scores, which indicated higher mastery goal orientation, than those who were exposed to the mastery condition, F(2,137) = 4.13, p < .05. There was no significant effect of gender, F(1,137) = 2.04, p > .05. There was also no interaction between goal orientation condition and gender, F(2,137) = .02, p < .05.
+
+## Figure 
+
+```{r}
+library(ggplot2)
+library(gplots)
+library(dplyr)
+```
+
+Then we create a line and grouped bar graph for the data analyzed. We used this figure in the poster, so it's to be saved. But first we need to summarize the data.
+
+```{r}
+temp<-dat%>%group_by(Condition,Gender)%>%
+  summarize(means=mean(Result),
+            sems=sd(Result)/sqrt(length(n)))
+```
+
+```{r}
+f<-ggplot(temp, aes(x=Condition,
+                    y=means,
+                    group=Gender,
+                    color=Gender))+
+  geom_line(size=1)+
+  geom_point(size=2)+
+  scale_color_manual(values=c("dark magenta","deeppink3"),
+                     name="Gender",
+                     breaks=c("Male","Female"),
+                     labels=c("Male", "Female"))+
+  geom_errorbar(aes(ymax=means+sems, ymin=means-sems),width=.2)+
+  ggtitle("Effects of Pre-exposure to Different Goal Types")+
+  labs(x="Goal Orientation",y="Results")+
+  theme(plot.title=element_text(size=11,face="bold",vjust=.5))+
+  theme(axis.title.x=element_text(size=12,face="bold",vjust=-.25))+
+  theme(axis.title.y=element_text(size=12,face="bold",vjust=1))+
+  theme(axis.text.x=element_text(size=10,face="bold",color="black"))+
+  theme(axis.text.y=element_text(size=10,face="bold",color="black"))+
+  coord_cartesian(ylim=c(min(temp$means)-2*max(temp$sems),
+                         max(temp$means)+2*max(temp$sems)))+
+  theme(panel.border=element_blank(),axis.line=element_line())+
+  theme(panel.grid.major.x=element_blank())+
+  theme(panel.grid.major.y=element_line(color="darkgrey"))+
+  theme(panel.grid.minor.y=element_blank())+
+  theme(legend.position=c(.4,.86))+
+  theme(legend.background=element_blank())+
+  theme(legend.background=element_rect(color="black"))+
+  theme(legend.title=element_blank())+
+  theme(legend.title=element_text(size=12))+
+  theme(legend.title.align=.5)+
+  theme(legend.text=element_text(size=10,face="bold"))
+f
+
+f<-ggplot(temp, aes(x=Condition,
+                    y=means,
+                    fill=Gender))+
+  geom_bar(stat="identity",position=position_dodge())+
+  scale_fill_manual(values=c("deeppink3","dark magenta"),
+                     name="Gender",
+                     breaks=c("Male", "Female"),
+                     labels=c("Male", "Female"))+
+  geom_errorbar(aes(ymax=means+sems,
+                    ymin=means-sems),
+                width=.2,
+                position=position_dodge(.9))+
+  ggtitle("Effects of Pre-exposure to Different Goal Types")+
+  labs(x="Goal Orientation",y="Results")+
+  theme(plot.title=element_text(size=11,face="bold",vjust=.5))+
+  theme(axis.title.x=element_text(size=12,face="bold",vjust=-.25))+
+  theme(axis.title.y=element_text(size=12,face="bold",vjust=1))+
+  theme(axis.text.x=element_text(size=10,face="bold",color="black"))+
+  theme(axis.text.y=element_text(size=10,face="bold",color="black"))+
+  coord_cartesian(ylim=c(min(temp$means)-2*max(temp$sems),
+                         max(temp$means)+2*max(temp$sems)))+
+  theme(panel.border=element_blank(),axis.line=element_line())+
+  theme(panel.grid.major.x=element_blank())+
+  theme(panel.grid.major.y=element_line(color="darkgrey"))+
+  theme(panel.grid.minor.y=element_blank())+
+  theme(legend.position=c(.43,.84))+
+  theme(legend.background=element_blank())+
+  theme(legend.background=element_rect(color="black"))+
+  theme(legend.title=element_blank())+
+  theme(legend.title=element_text(size=12))+
+  theme(legend.title.align=.5)+
+  theme(legend.text=element_text(size=10,face="bold"))
+f
+```
+
+## Summary
+
+From the figures we can see that even though the participants were pre-exposed to a specific goal orientation prior to taking the survey, there was only a small effect on how they answered the survey and which goal orientation they identified with. We can also see that results of the survery did not show a significant change whether the participant was male or female. Finally, there was no effect on goal orientation condition and gender within the interaction.
